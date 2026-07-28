@@ -1,6 +1,6 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "jogos-gratis-telegram-bot",
+	"name": "jogos-gratis-telegram-discord-bot",
 	"main": "src/index.ts",
 	"compatibility_date": "2026-07-13",
 	"compatibility_flags": ["nodejs_compat"],
@@ -23,7 +23,7 @@
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "jogos-gratis-bot",
+			"database_name": "jogos-gratis-multiplataforma",
 			"database_id": "SUBSTITUA_PELO_ID_DO_D1",
 			"migrations_dir": "migrations"
 		}

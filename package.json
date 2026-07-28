@@ -1,12 +1,12 @@
 {
-  "name": "jogos-gratis-telegram-bot",
+  "name": "jogos-gratis-telegram-discord-bot",
   "version": "1.0.0",
   "private": true,
-  "description": "Bot serverless de Telegram que avisa sobre jogos grátis para PC sem repetir promoções.",
+  "description": "Bot serverless para Telegram e Discord que avisa sobre jogos grátis para PC.",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/oliveirasdiogo/jogos-gratis-telegram-bot.git"
+    "url": "git+https://github.com/oliveirasdiogo/jogos-gratis-telegram-discord-bot.git"
   },
   "engines": {
     "node": ">=22"
@@ -18,8 +18,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "check": "npm run typecheck && npm run test",
-    "db:migrate:local": "wrangler d1 migrations apply jogos-gratis-bot --local",
-    "db:migrate:remote": "wrangler d1 migrations apply jogos-gratis-bot --remote"
+    "db:migrate:local": "wrangler d1 migrations apply jogos-gratis-multiplataforma --local",
+    "db:migrate:remote": "wrangler d1 migrations apply jogos-gratis-multiplataforma --remote"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "5.20260728.1",

@@ -6,6 +6,7 @@ Não abra issues, commits ou capturas de tela contendo estes valores:
 
 - `TELEGRAM_BOT_TOKEN`
 - `TELEGRAM_WEBHOOK_SECRET`
+- `DISCORD_BOT_TOKEN`
 - `ADMIN_SETUP_KEY`
 - conteúdo real do arquivo `.dev.vars`
 
@@ -17,11 +18,14 @@ da instância D1 de cada instalação. O repositório mantém apenas
 
 1. Revogue o token do bot imediatamente no `@BotFather`, caso ele esteja
    envolvido.
-2. Gere novos valores para os demais segredos.
+2. Gere novos valores para os demais segredos. Se o token Discord estiver
+   envolvido, redefina-o no Developer Portal.
 3. Atualize-os de forma interativa com `npx.cmd wrangler secret put NOME`.
 4. Execute novamente o endpoint `/admin/setup-webhook` se o token ou o segredo
    do webhook tiver sido alterado.
-5. Remova o segredo do histórico do Git. Apagá-lo apenas do commit mais recente
+5. Execute novamente `/admin/setup-discord` se o token Discord tiver sido
+   redefinido.
+6. Remova o segredo do histórico do Git. Apagá-lo apenas do commit mais recente
    não é suficiente.
 
 ## Relato de vulnerabilidades

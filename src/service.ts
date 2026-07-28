@@ -98,7 +98,7 @@ async function notifySubscriber(
   }
 }
 
-export async function runScheduledCheck(env: Env): Promise<void> {
+export async function runScheduledCheck(env: Env): Promise<Giveaway[]> {
   const activeGiveaways = await refreshCatalog(env);
   const allSubscribers = await listActiveSubscribers(env.DB);
   const subscribers = normalizeAccessMode(env.ACCESS_MODE) === "owner_only"
@@ -114,6 +114,8 @@ export async function runScheduledCheck(env: Env): Promise<void> {
       console.error(`Falha ao avisar o chat ${subscriber.chatId}.`, error);
     }
   }
+
+  return activeGiveaways;
 }
 
 export function filterByPreferences(

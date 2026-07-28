@@ -1,4 +1,7 @@
 import { handleTelegramUpdate } from "./bot";
+import { handleDiscordInteraction } from "./discord-bot";
+import { runDiscordScheduledCheck } from "./discord-service";
+import { registerDiscordCommands } from "./discord";
 import { runScheduledCheck } from "./service";
 import { configureWebhook } from "./telegram";
 import type { Env, TelegramUpdate } from "./types";
@@ -36,6 +39,30 @@ async function handleAdminSetup(request: Request, env: Env): Promise<Response> {
   return json({ ok: true, webhook_url: webhookUrl, commands_configured: true });
 }
 
+async function handleDiscordSetup(
+  request: Request,
+  env: Env,
+): Promise<Response> {
+  const authorization = request.headers.get("Authorization");
+  const expected = env.ADMIN_SETUP_KEY
+    ? `Bearer ${env.ADMIN_SETUP_KEY}`
+    : undefined;
+  if (!secretsEqual(authorization, expected)) {
+    return json({ ok: false, error: "Não autorizado." }, 401);
+  }
+
+  await registerDiscordCommands(
+    env.DISCORD_BOT_TOKEN,
+    env.DISCORD_APPLICATION_ID,
+    env.DISCORD_GUILD_ID?.trim() || undefined,
+  );
+  return json({
+    ok: true,
+    scope: env.DISCORD_GUILD_ID ? "guild" : "global",
+    interactions_endpoint: `${new URL(request.url).origin}/discord/interactions`,
+  });
+}
+
 export default {
   async fetch(request, env, ctx): Promise<Response> {
     const url = new URL(request.url);
@@ -43,13 +70,15 @@ export default {
     if (request.method === "GET" && url.pathname === "/health") {
       return json({
         ok: true,
-        service: "jogos-gratis-telegram-bot",
+        service: "jogos-gratis-telegram-discord-bot",
         time: new Date().toISOString(),
       });
     }
 
     if (request.method === "GET" && url.pathname === "/") {
-      return new Response("Bot de jogos grátis ativo. Use /health para verificar.");
+      return new Response(
+        "Bot de jogos grátis para Telegram e Discord ativo. Use /health.",
+      );
     }
 
     if (request.method === "POST" && url.pathname === "/admin/setup-webhook") {
@@ -65,6 +94,31 @@ export default {
           500,
         );
       }
+    }
+
+    if (
+      request.method === "POST" &&
+      url.pathname === "/admin/setup-discord"
+    ) {
+      try {
+        return await handleDiscordSetup(request, env);
+      } catch (error) {
+        console.error("Falha ao configurar comandos Discord.", error);
+        return json(
+          {
+            ok: false,
+            error: error instanceof Error ? error.message : String(error),
+          },
+          500,
+        );
+      }
+    }
+
+    if (
+      request.method === "POST" &&
+      url.pathname === "/discord/interactions"
+    ) {
+      return handleDiscordInteraction(request, env, ctx);
     }
 
     if (request.method === "POST" && url.pathname === "/telegram/webhook") {
@@ -95,7 +149,10 @@ export default {
 
   async scheduled(_controller, env, ctx): Promise<void> {
     ctx.waitUntil(
-      runScheduledCheck(env).catch((error) => {
+      (async () => {
+        const activeGiveaways = await runScheduledCheck(env);
+        await runDiscordScheduledCheck(env, activeGiveaways);
+      })().catch((error) => {
         console.error("Falha na verificação agendada.", error);
         throw error;
       }),

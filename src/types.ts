@@ -17,6 +17,10 @@ export interface Env {
   DB: D1Database;
   TELEGRAM_BOT_TOKEN: string;
   TELEGRAM_WEBHOOK_SECRET: string;
+  DISCORD_APPLICATION_ID: string;
+  DISCORD_PUBLIC_KEY: string;
+  DISCORD_BOT_TOKEN: string;
+  DISCORD_GUILD_ID?: string;
   ADMIN_SETUP_KEY: string;
   OWNER_CHAT_ID: string;
   ACCESS_MODE?: string;
