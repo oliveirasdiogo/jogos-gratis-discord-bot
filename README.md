@@ -80,9 +80,9 @@ npm run deploy
 ```
 
 Depois, registre os comandos por `/admin/setup-discord` e informe no Developer
-Portal a URL pública `/discord/interactions`. Para desenvolvimento,
-`DISCORD_GUILD_ID` faz os comandos aparecerem imediatamente no servidor de
-teste.
+Portal a URL pública `/discord/interactions`. O padrão envia por DM com
+aprovação manual. `DISCORD_DELIVERY_MODE` aceita `dm`, `channel` ou `both`, e
+`DISCORD_ACCESS_MODE` aceita `approval`, `owner_only` ou `open`.
 
 O guia detalhado para Linux e Windows está em
 [docs/DISCORD.md](docs/DISCORD.md).
@@ -99,7 +99,8 @@ O guia detalhado para Linux e Windows está em
 | `/parar` | Desativar avisos |
 | `/ajuda` | Mostrar ajuda |
 
-Ativar, parar e alterar plataformas exige **Gerenciar servidor**.
+Em canais, ativar, parar e alterar plataformas exige **Gerenciar servidor**.
+O proprietário usa `/pendentes`, `/aprovar` e `/negar` para controlar acesso.
 
 ## Segurança
 
