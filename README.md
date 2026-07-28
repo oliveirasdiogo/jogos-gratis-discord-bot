@@ -1,155 +1,111 @@
-# Jogos Grátis — Telegram + Discord
+# Jogos Grátis — Discord
 
-[![Verificações](https://github.com/oliveirasdiogo/jogos-gratis-telegram-discord-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/oliveirasdiogo/jogos-gratis-telegram-discord-bot/actions/workflows/ci.yml)
+[![Verificações](https://github.com/oliveirasdiogo/jogos-gratis-discord-bot/actions/workflows/ci.yml/badge.svg)](https://github.com/oliveirasdiogo/jogos-gratis-discord-bot/actions/workflows/ci.yml)
 [![TypeScript 7](https://img.shields.io/badge/TypeScript-7.0-3178C6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![Node.js 22+](https://img.shields.io/badge/Node.js-22%2B-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Cloudflare Workers](https://img.shields.io/badge/Cloudflare-Workers-F38020?logo=cloudflare&logoColor=white)](https://workers.cloudflare.com/)
-[![Telegram](https://img.shields.io/badge/Telegram-Bot-26A5E4?logo=telegram&logoColor=white)](https://core.telegram.org/bots/api)
 [![Discord](https://img.shields.io/badge/Discord-App-5865F2?logo=discord&logoColor=white)](https://docs.discord.com/developers/)
 [![Licença MIT](https://img.shields.io/badge/Licen%C3%A7a-MIT-2EA44F)](LICENSE)
 
-Bot serverless que consulta jogos grátis para PC e envia avisos pelo Telegram e
-pelo Discord. As duas plataformas compartilham catálogo, filtros e histórico,
-mas mantêm inscrições e controle de entregas separados.
+Bot serverless que encontra jogos completos gratuitos para PC e envia avisos a
+canais do Discord. Esta edição é independente e não exige Telegram.
 
 ## Índice
 
 - [Recursos](#recursos)
 - [Arquitetura](#arquitetura)
-- [Pré-requisitos](#pré-requisitos)
 - [Instalação](#instalação)
-- [Configuração do Telegram](#configuração-do-telegram)
 - [Configuração do Discord](#configuração-do-discord)
-- [Publicação](#publicação)
 - [Comandos](#comandos)
 - [Segurança](#segurança)
 - [Desenvolvimento](#desenvolvimento)
 
 ## Recursos
 
-- Avisos automáticos de jogos completos gratuitos;
 - Steam, Epic Games Store, GOG, itch.io, DRM-Free e outras lojas de PC;
-- Deduplicação independente por conversa do Telegram e canal do Discord;
-- Preferências de lojas por destino;
-- Histórico dos últimos sete dias;
-- Acesso configurável no Telegram;
-- Permissão **Gerenciar servidor** para configurar canais Discord;
-- Execução gratuita ou de baixo custo em Cloudflare Workers e D1;
-- Audit de dependências, testes e tipagem no GitHub Actions.
+- avisos automáticos com deduplicação por canal;
+- filtros de lojas e histórico dos últimos sete dias;
+- comandos slash e respostas privadas;
+- permissão **Gerenciar servidor** para configurar canais;
+- Cloudflare Workers, D1 e cron, sem servidor permanente;
+- testes, tipagem e auditoria no GitHub Actions.
 
 ## Arquitetura
 
 ```text
-Cron Trigger
-     |
-     v
-GamerPower API ---> catálogo compartilhado no D1
-                         |
-                +--------+--------+
-                |                 |
-         Telegram Bot       Discord App
-        webhook seguro    Interactions HTTP
+GamerPower API -> catálogo D1 -> canais Discord
+                       ^
+                  Cron Trigger
+
+Discord Interactions -> Cloudflare Worker -> comandos slash
 ```
 
-O Discord usa webhooks de Interactions, sem conexão permanente com o Gateway.
-As requisições são verificadas com a chave pública Ed25519 da aplicação.
-
-## Pré-requisitos
-
-- Node.js 22 ou superior;
-- uma conta Cloudflare;
-- um bot criado pelo `@BotFather`;
-- uma aplicação no Discord Developer Portal;
-- Git.
+A aplicação recebe Interactions por HTTP e valida cada assinatura Ed25519. Não
+é necessário manter uma conexão com o Discord Gateway.
 
 ## Instalação
 
+Pré-requisitos: Node.js 22+, Git, conta Cloudflare e uma aplicação no Discord
+Developer Portal.
+
 ```bash
-git clone https://github.com/oliveirasdiogo/jogos-gratis-telegram-discord-bot.git
-cd jogos-gratis-telegram-discord-bot
+git clone https://github.com/oliveirasdiogo/jogos-gratis-discord-bot.git
+cd jogos-gratis-discord-bot
 npm install
 ```
 
-No Windows PowerShell, use `npm.cmd` e `npx.cmd` caso a política de execução
-bloqueie os arquivos `.ps1`.
+No Windows PowerShell, use `npm.cmd` e `npx.cmd` se a política de execução
+bloquear scripts `.ps1`.
 
-Copie `wrangler.example.jsonc` para `wrangler.jsonc`, crie um banco D1 e coloque
-o `database_id` no arquivo:
+Copie `wrangler.example.jsonc` para `wrangler.jsonc`, crie o D1, coloque o
+`database_id` no arquivo e aplique as migrações:
 
 ```bash
 npx wrangler login
-npx wrangler d1 create jogos-gratis-multiplataforma
+npx wrangler d1 create jogos-gratis-discord
 npm run db:migrate:remote
 ```
 
-## Configuração do Telegram
-
-Cadastre os segredos:
-
-```bash
-npx wrangler secret put TELEGRAM_BOT_TOKEN
-npx wrangler secret put TELEGRAM_WEBHOOK_SECRET
-npx wrangler secret put OWNER_CHAT_ID
-```
-
-O guia detalhado, incluindo Windows e modos de acesso, está em
-[docs/TELEGRAM.md](docs/TELEGRAM.md).
-
 ## Configuração do Discord
 
-Crie a aplicação, configure permissões e instale-a no servidor de teste.
-`DISCORD_APPLICATION_ID` e `DISCORD_PUBLIC_KEY` são identificadores públicos,
-mas podem ser cadastrados junto às variáveis de implantação por conveniência.
-O `DISCORD_BOT_TOKEN` é o único segredo Discord:
+Cadastre as variáveis da aplicação. O bot token e `ADMIN_SETUP_KEY` são
+segredos; Application ID e Public Key são identificadores públicos:
 
 ```bash
 npx wrangler secret put DISCORD_APPLICATION_ID
 npx wrangler secret put DISCORD_PUBLIC_KEY
 npx wrangler secret put DISCORD_BOT_TOKEN
-```
-
-Durante testes, `DISCORD_GUILD_ID` registra comandos imediatamente apenas no
-servidor informado. Sem esse valor, os comandos são globais.
-
-O passo a passo completo está em [docs/DISCORD.md](docs/DISCORD.md).
-
-## Publicação
-
-```bash
+npx wrangler secret put ADMIN_SETUP_KEY
 npm run deploy
 ```
 
-Depois da publicação:
+Depois, registre os comandos por `/admin/setup-discord` e informe no Developer
+Portal a URL pública `/discord/interactions`. Para desenvolvimento,
+`DISCORD_GUILD_ID` faz os comandos aparecerem imediatamente no servidor de
+teste.
 
-1. configure o webhook do Telegram pelo endpoint administrativo;
-2. registre os comandos Discord pelo endpoint administrativo;
-3. informe ao Discord a URL pública `/discord/interactions`.
-
-Os exemplos exatos estão nos guias de cada plataforma.
+O guia detalhado para Linux e Windows está em
+[docs/DISCORD.md](docs/DISCORD.md).
 
 ## Comandos
 
-| Telegram | Discord | Função |
-|---|---|---|
-| `/start` | `/ativar` | Ativar avisos |
-| `/agora` | `/agora` | Mostrar ofertas ativas |
-| `/ultimos7dias` | `/ultimos7dias` | Mostrar histórico |
-| `/plataformas` | `/plataformas` | Escolher lojas |
-| `/status` | `/status` | Mostrar configuração |
-| `/parar` | `/parar` | Desativar avisos |
-| `/ajuda` | `/ajuda` | Mostrar ajuda |
+| Comando | Função |
+|---|---|
+| `/ativar` | Ativar avisos no canal |
+| `/agora` | Mostrar ofertas ativas |
+| `/ultimos7dias` | Mostrar histórico |
+| `/plataformas` | Escolher lojas |
+| `/status` | Mostrar configuração |
+| `/parar` | Desativar avisos |
+| `/ajuda` | Mostrar ajuda |
 
-No Discord, ativar, parar e alterar plataformas exige a permissão
-**Gerenciar servidor**.
+Ativar, parar e alterar plataformas exige **Gerenciar servidor**.
 
 ## Segurança
 
-- Nunca publique tokens, chaves privadas ou o `database_id`; o Application ID e
-  a Public Key do Discord podem ser públicos;
-- segredos reais devem ser cadastrados com `wrangler secret put`;
-- o webhook Telegram usa um segredo próprio;
-- Interactions do Discord são rejeitadas quando a assinatura Ed25519 é inválida;
-- menções do Discord são desativadas nas mensagens automáticas;
+- nunca publique o bot token, `ADMIN_SETUP_KEY` ou o `database_id`;
+- as Interactions são rejeitadas quando a assinatura for inválida;
+- menções são desativadas nas mensagens automáticas;
 - consulte [SECURITY.md](SECURITY.md) para resposta a vazamentos.
 
 ## Desenvolvimento
@@ -157,9 +113,7 @@ No Discord, ativar, parar e alterar plataformas exige a permissão
 ```bash
 npm run typecheck
 npm test
-npm run check
 npm audit --audit-level=high
 ```
 
-O arquivo `.dev.vars.example` documenta as variáveis locais sem conter
-credenciais reais.
+O projeto usa a licença [MIT](LICENSE).

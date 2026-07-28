@@ -16,11 +16,11 @@ import {
   platformNames,
   resolvePlatformSelection,
 } from "./domain";
-import { getGiveawaysFromLastSevenDays } from "./db";
 import {
   filterByPreferences,
+  getGiveawaysFromLastSevenDays,
   refreshCatalog,
-} from "./service";
+} from "./catalog";
 import type { Env, Giveaway } from "./types";
 
 interface DiscordOption {

@@ -15,15 +15,11 @@ export const ALL_PLATFORMS = Object.keys(
 
 export interface Env {
   DB: D1Database;
-  TELEGRAM_BOT_TOKEN: string;
-  TELEGRAM_WEBHOOK_SECRET: string;
   DISCORD_APPLICATION_ID: string;
   DISCORD_PUBLIC_KEY: string;
   DISCORD_BOT_TOKEN: string;
   DISCORD_GUILD_ID?: string;
   ADMIN_SETUP_KEY: string;
-  OWNER_CHAT_ID: string;
-  ACCESS_MODE?: string;
   CHECK_INTERVAL_LABEL?: string;
 }
 
@@ -55,37 +51,6 @@ export interface Giveaway {
   endsAt: string | null;
   firstSeenAt?: string;
   active: boolean;
-}
-
-export interface Subscriber {
-  chatId: string;
-  username: string | null;
-  firstName: string | null;
-  active: boolean;
-  platforms: PlatformSlug[];
-}
-
-export interface TelegramUser {
-  id: number;
-  username?: string;
-  first_name?: string;
-}
-
-export interface TelegramChat {
-  id: number;
-  type: "private" | "group" | "supergroup" | "channel";
-}
-
-export interface TelegramMessage {
-  message_id: number;
-  from?: TelegramUser;
-  chat: TelegramChat;
-  text?: string;
-}
-
-export interface TelegramUpdate {
-  update_id: number;
-  message?: TelegramMessage;
 }
 
 export interface MessageChunk {
